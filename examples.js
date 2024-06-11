@@ -20,6 +20,7 @@ const cliProgress = require('cli-progress');
 
         // Get geomagnetic data
         const geomagneticData = bmm150.getGeomagnetic();
+        console.log(geomagneticData);
         console.log(`Geomagnetic Data: X=${geomagneticData.x} µT, Y=${geomagneticData.y} µT, Z=${geomagneticData.z} µT`);
 
         // Get compass degree

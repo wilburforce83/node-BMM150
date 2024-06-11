@@ -57,8 +57,9 @@ class BMM150 {
         const x = (xMsb << 8) | xLsb;
         const y = (yMsb << 8) | yLsb;
         const z = (zMsb << 8) | zLsb;
+        const time = new Date().toISOString()
 
-        return { x, y, z };
+        return { x, y, z, time };
     }
 
     // New methods based on Python script
@@ -82,7 +83,8 @@ class BMM150 {
         return {
             x: data.x / 16, // Convert to microteslas
             y: data.y / 16,
-            z: data.z / 16
+            z: data.z / 16,
+            time: new Date().toISOString()
         };
     }
 
