@@ -5,7 +5,7 @@
   },
   "name": "node-bmm150",
   "description": "Node JS package for the BMM150 magnetometer unit using I2C",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "index.js",
   "devDependencies": {},
   "scripts": {
