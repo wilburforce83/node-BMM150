@@ -2,5 +2,30 @@
   "dependencies": {
     "cli-progress": "^3.12.0",
     "i2c-bus": "^5.2.3"
-  }
+  },
+  "name": "node-bmm150",
+  "description": "Node JS package for the BMM150 magnetometer unit using I2C",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node examples.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilburforce83/node-BMM150.git"
+  },
+  "keywords": [
+    "BMM150",
+    "rpi",
+    "raspberry",
+    "pi",
+    "magnetometer"
+  ],
+  "author": "Will Shearer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wilburforce83/node-BMM150/issues"
+  },
+  "homepage": "https://github.com/wilburforce83/node-BMM150#readme"
 }
