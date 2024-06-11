@@ -7,7 +7,6 @@ class BMM150 {
     }
 
     writeRegister(register, value) {
-      //  console.log(`Writing to register 0x${register.toString(16)}: 0x${value.toString(16)}`);
         this.i2cBus.writeByteSync(this.address, register, value);
     }
 
@@ -20,17 +19,14 @@ class BMM150 {
     setPower(enabled) {
         const powerState = enabled ? BMM150.POWER_ON : BMM150.POWER_OFF;
         this.writeRegister(BMM150.POWER_CTRL, powerState);
-       // console.log(`Power ${enabled ? 'enabled' : 'disabled'}`);
     }
 
     setOperationMode(mode) {
         this.writeRegister(BMM150.OP_MODE, mode);
-       // console.log(`Operation mode set to 0x${mode.toString(16)}`);
     }
 
     getChipID() {
         const chipId = this.readRegister(BMM150.CHIP_ID, 1)[0];
-       // console.log(`Read chip ID: 0x${chipId.toString(16)}`);
         return chipId;
     }
 
@@ -62,34 +58,30 @@ class BMM150 {
         return { x, y, z, time };
     }
 
-    // New methods based on Python script
     setPresetMode(mode) {
         this.writeRegister(BMM150.PRESET_MODE, mode);
-      //  console.log(`Preset mode set to 0x${mode.toString(16)}`);
     }
 
     setRate(rate) {
         this.writeRegister(BMM150.MODE_RATE_REGISTER, rate);
-      //  console.log(`Rate set to 0x${rate.toString(16)}`);
     }
 
     setMeasurementXYZ() {
         this.writeRegister(BMM150.REG_AXES_ENABLE, 0x00);
-      //  console.log(`Measurement XYZ enabled`);
     }
 
-    getGeomagnetic() {
+    getGeomagnetic(calibration = { x: 0, y: 0, z: 0 }) {
         const data = this.readMagnetometerData();
         return {
-            x: data.x / 16, // Convert to microteslas
-            y: data.y / 16,
-            z: data.z / 16,
+            x: (data.x / 16) - calibration.x, // Convert to microteslas and apply calibration offset
+            y: (data.y / 16) - calibration.y,
+            z: (data.z / 16) - calibration.z,
             time: new Date().toISOString()
         };
     }
 
-    getCompassDegree() {
-        const geomagnetic = this.getGeomagnetic();
+    getCompassDegree(calibration = { x: 0, y: 0, z: 0 }) {
+        const geomagnetic = this.getGeomagnetic(calibration);
         const degree = Math.atan2(geomagnetic.y, geomagnetic.x) * 180 / Math.PI;
         return degree >= 0 ? degree : degree + 360;
     }
@@ -113,6 +105,38 @@ class BMM150 {
             clearInterval(this.streamInterval);
             console.log('Stopped live data stream');
         }
+    }
+
+    async selfCalibration(minutes) {
+        const samples = [];
+        const duration = minutes * 60 * 1000;
+        const interval = 1000; // Collect data every 1 second
+
+        console.log(`Starting self-calibration for ${minutes} minutes...`);
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < duration) {
+            const geomagnetic = this.getGeomagnetic();
+            samples.push(geomagnetic);
+            await new Promise(resolve => setTimeout(resolve, interval));
+        }
+
+        const average = samples.reduce((acc, sample) => {
+            acc.x += sample.x;
+            acc.y += sample.y;
+            acc.z += sample.z;
+            return acc;
+        }, { x: 0, y: 0, z: 0 });
+
+        const count = samples.length;
+        const calibration = {
+            x: average.x / count,
+            y: average.y / count,
+            z: average.z / count
+        };
+
+        console.log(`Calibration completed: ${JSON.stringify(calibration)}`);
+        return calibration;
     }
 }
 
@@ -140,4 +164,3 @@ BMM150.RATE_10HZ = 0x00;
 
 // Exporting the BMM150 class
 module.exports = BMM150;
-
